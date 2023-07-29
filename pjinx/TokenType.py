@@ -39,7 +39,7 @@ class TokenType(Enum):
     FUN = 'fun'
     FOR = 'for'
     IF = 'if'
-    NULL = 'null'
+    NIL = 'nil'
     OR = 'or'
     PRINT = 'print'
     RETURN = 'return'
