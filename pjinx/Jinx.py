@@ -1,21 +1,21 @@
 import sys
 from Scanner import Scanner
-from TokenType import TokenType
 
 class Jinx:
 
-    hadError = False
+    def __init__(self):
+
+        self.args = sys.argv[1:]
+        self.n = len(self.args)
+        self.hadError = False
 
     def main(self):
 
-        sys.argv = sys.argv[1:]
-        n = len(sys.argv)
-
-        if (n > 1):
+        if (self.n > 1):
             print("Usage : jinx [script]")
             sys.exit(64)
         
-        elif (n == 1):
+        elif (self.n == 1):
             self.runFile(sys.argv[0])
         
         else:
@@ -30,7 +30,7 @@ class Jinx:
         
         self.run(source)
 
-        if (self.hadError):
+        if (self.getErrorState()):
             sys.exit(65)
 
     def runPrompt(self):
@@ -53,17 +53,13 @@ class Jinx:
         for token in tokens:
             print(token)
     
-    def error(self, line, message):
-
-        self.report(line, "", message)
-    
-    def report(self, line, where, message):
+    def getErrorState(self):
         
-        print(f"[Line {line}] Error {where}: {message}")
-        self.hadError = True
+        self.hadError = Scanner.hadError
+
 
 if (__name__ == "__main__"):
-    
+
     jinx = Jinx()
     jinx.main()
 

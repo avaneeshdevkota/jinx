@@ -11,6 +11,8 @@ class Scanner:
         self.current = 0
         self.line = 1
 
+        self.hadError = False
+
     def isAtEnd(self):
 
         return self.current >= len(self.source)
@@ -45,6 +47,15 @@ class Scanner:
         self.current += 1
         return True
     
+    def error(self, line, message):
+
+        self.report(line, "", message)
+    
+    def report(self, line, where, message):
+
+        print(f"[Line {line}] Error {where} : {message}")
+        self.hadError = True
+
     def add(self, type):
 
         self.addToken(type, None)
@@ -64,8 +75,8 @@ class Scanner:
             self.advance()
         
         if (self.isAtEnd()):
-            print("Unterminated string.")
-            # Jinx.error(self.line, "Unterminated string.")
+
+            self.error(self.line, "Unterminated string.")
             return
         
         self.advance()
@@ -140,9 +151,8 @@ class Scanner:
                 self.identifier()
             
             elif (ch not in ignore):
-                # from Jinx import Jinx
-                print("Unexpected character.")
-                # Jinx.error(self.line, "Unexpected character.")
+                
+                self.error(self.line, "Unexpected character")
 
     def scanTokens(self):
 
