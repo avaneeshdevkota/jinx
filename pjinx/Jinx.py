@@ -1,5 +1,7 @@
 import sys
 from Scanner import Scanner
+from Parser import Parser
+from AstPrinter import AstPrinter
 
 class Jinx:
 
@@ -50,12 +52,19 @@ class Jinx:
         scanner = Scanner(source)
         tokens = scanner.scanTokens()
 
-        for token in tokens:
-            print(token)
+        parser = Parser(tokens)
+        expression = parser.parse()
+
+        if (self.hadError):
+            return 
+        
+        print(AstPrinter().print(expression))
+
     
     def getErrorState(self):
         
         self.hadError = Scanner.hadError
+        self.hadError = Parser.hadError
 
 
 if (__name__ == "__main__"):
