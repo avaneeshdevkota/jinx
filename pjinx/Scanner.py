@@ -1,5 +1,6 @@
 from TokenType import TokenType
 from Token import Token
+from Error import JinxSyntaxError
 
 class Scanner:
 
@@ -10,8 +11,6 @@ class Scanner:
         self.start = 0
         self.current = 0
         self.line = 1
-
-        self.hadError = False
 
     def isAtEnd(self):
 
@@ -46,15 +45,6 @@ class Scanner:
         
         self.current += 1
         return True
-    
-    def error(self, line, message):
-
-        self.report(line, "", message)
-    
-    def report(self, line, where, message):
-
-        print(f"[Line {line}] Error {where} : {message}")
-        self.hadError = True
 
     def add(self, type):
 
@@ -76,9 +66,8 @@ class Scanner:
         
         if (self.isAtEnd()):
 
-            self.error(self.line, "Unterminated string.")
-            return
-        
+            raise JinxSyntaxError(self.line, "Unterminated string.")
+                
         self.advance()
 
         value = self.source[self.start + 1 : self.current - 1]
@@ -152,7 +141,7 @@ class Scanner:
             
             elif (ch not in ignore):
                 
-                self.error(self.line, "Unexpected character")
+                raise JinxSyntaxError(self.line, "Unexpected character.")
 
     def scanTokens(self):
 

@@ -1,3 +1,4 @@
+from typing import Optional, Callable
 from TokenType import TokenType
 from Expr import *
 from Error import JinxParseError
@@ -8,16 +9,16 @@ class Parser:
 
         self.tokens = tokens
         self.current = 0
-        self.hadError = False
-    
 
     def parse(self):
+        
+        return self.expression()
 
-        try:
-            return self.expression()
+        # try:
+        #     return self.expression()
 
-        except JinxParseError:
-            return None
+        # except JinxParseError:
+        #     return None
 
     def expression(self):
 
@@ -103,8 +104,7 @@ class Parser:
             self.consume(TokenType(')'), "Expect ')' after '('")
             return Grouping(expr)
     
-        raise self.error(self.peek(), "Expect expression.")
-
+        raise JinxParseError(self.peek(), "Expect expression.")
     
     def match(self, *args):
 
@@ -121,12 +121,7 @@ class Parser:
         if (self.check(type)):
             return self.advance()
         
-        raise self.error(self.peek(), message)
-
-    def error(self, token, message):
-
-        err = JinxParseError(token, message)
-        return err
+        raise JinxParseError(self.peek(), message)
     
     def synchronize(self):
 
@@ -162,10 +157,6 @@ class Parser:
                 return
         
             self.advance()
-
-            
-
-            
 
     def check(self, type):
 
