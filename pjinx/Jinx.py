@@ -2,6 +2,8 @@ import sys
 from Scanner import Scanner
 from Parser import Parser
 from AstPrinter import AstPrinter
+from Interpreter import Interpreter
+from Error import JinxException, JinxSyntaxError, JinxParseError, JinxRuntimeError
 
 class Jinx:
 
@@ -9,7 +11,11 @@ class Jinx:
 
         self.args = sys.argv[1:]
         self.n = len(self.args)
+
+        self.interpreter = Interpreter()
+        
         self.hadError = False
+        self.hadRuntimeError = False
 
     def main(self):
 
@@ -39,33 +45,44 @@ class Jinx:
 
         while (True):
 
-            try:
+            try:         
                 line = input(">>> ")
                 self.run(line)
                 self.hadError = False
 
             except EOFError:
-                sys.exit() 
+                sys.exit()
+
+            except KeyboardInterrupt:
+                sys.exit()
 
     def run(self, source):
 
-        scanner = Scanner(source)
-        tokens = scanner.scanTokens()
+        try:
+            scanner = Scanner(source)
+            tokens = scanner.scanTokens()
 
-        parser = Parser(tokens)
-        expression = parser.parse()
+            parser = Parser(tokens)
+            expression = parser.parse()
 
-        if (self.hadError):
-            return 
+            self.interpreter.interpret(expression)
         
-        print(AstPrinter().print(expression))
+        except (JinxSyntaxError, JinxParseError) as e:
+            self.reportError(e)
+        
+        except JinxRuntimeError as e:
+            self.reportRuntimeError(e)
+        
+    def reportError(self, err: JinxException) -> None:
 
+        print(f"[Line {err.line}]: {err.message}")
+        self.hadError = True
     
-    def getErrorState(self):
-        
-        self.hadError = Scanner.hadError
-        self.hadError = Parser.hadError
+    def reportRuntimeError(self, err : JinxRuntimeError) -> None:
 
+        print(f"[Line {err.line}]: {err.message}")
+        self.hadError = True
+        self.hadRuntimeError = True
 
 if (__name__ == "__main__"):
 
