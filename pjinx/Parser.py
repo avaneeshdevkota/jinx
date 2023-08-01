@@ -17,12 +17,13 @@ class Parser:
 
         while (not self.isAtEnd()):
 
-            statement = self.declaration()
+            try:
+                statement = self.declaration()
+                statements.append(statement)
             
-            if (statement == None):
-                raise JinxParseError(self.tokens[self.current], "Missing semi-colon.")
+            except:
+                raise JinxParseError(self.tokens[self.current], "Something has gone very wrong.")
 
-            statements.append(statement)
         
         return statements
 
@@ -46,7 +47,7 @@ class Parser:
             return self.statement()
         
         except JinxParseError:
-
+            
             self.synchronize()
             return None
     
@@ -67,6 +68,10 @@ class Parser:
         if (self.match(TokenType('while'))):
 
             return self.whileStatement()
+        
+        if (self.match(TokenType('for'))):
+
+            return self.forStatement()
 
         return self.expressionStatement()
     
@@ -93,7 +98,6 @@ class Parser:
     def varDeclaration(self):
 
         name = self.consume(TokenType('identifier'), "Expect variable name.")
-
         initializer = None
 
         if (self.match(TokenType('='))):
@@ -110,6 +114,50 @@ class Parser:
         body = self.statement()
 
         return While(condition, body)
+    
+    def forStatement(self):
+
+        self.consume(TokenType('('), "Expect '(' after 'for'.")
+
+        initializer = None
+
+        if (self.match(TokenType(';'))):
+            initializer = None
+        
+        elif (self.match(TokenType('var'))):
+            initializer = self.varDeclaration()
+        
+        else:
+            initializer = self.expressionStatement()
+        
+        condition = None
+
+        if (not self.check(TokenType(';'))):
+            condition = self.expression()
+        
+        self.consume(TokenType(';'), "Expect ';' after loop condition.")
+
+        increment = None
+        
+        if (not self.check(TokenType(')'))):
+            increment = self.expression()
+        
+        self.consume(TokenType(')'), "Expect ')' after clauses.")
+
+        body = self.statement()
+
+        if (increment != None):
+            body = Block([body, Expression(increment)])
+
+        if (condition == None):
+            condition = Literal(True)
+        
+        body = While(condition, body)     
+
+        if (initializer != None):
+            body = Block([initializer, body])   
+
+        return body
 
     def expressionStatement(self):
 
@@ -127,10 +175,9 @@ class Parser:
         self.consume(TokenType('}'), "Expect '}' after block.")
         return statements
 
-    
     def assignment(self):
 
-        expr = self.orr()
+        expr = self.logicalOr()
 
         if (self.match(TokenType('='))):
 
@@ -145,19 +192,19 @@ class Parser:
 
         return expr
     
-    def orr(self):
+    def logicalOr(self):
 
-        expr = self.andd()
+        expr = self.logicalAnd()
 
         while (self.match(TokenType('or'))):
 
             operator = self.previous()
-            right = self.andd()
+            right = self.logicalAnd()
             expr = Logical(expr, operator, right)
         
         return expr
     
-    def andd(self):
+    def logicalAnd(self):
 
         expr = self.equality()
 
@@ -265,7 +312,7 @@ class Parser:
         return False
     
     def consume(self, type, message):
-        
+
         if (self.check(type)):
             return self.advance()
         
