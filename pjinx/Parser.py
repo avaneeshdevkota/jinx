@@ -1,6 +1,7 @@
 from typing import Optional, Callable
 from TokenType import TokenType
 from Expr import *
+from Stmt import *
 from Error import JinxParseError
 
 class Parser:
@@ -11,8 +12,13 @@ class Parser:
         self.current = 0
 
     def parse(self):
+
+        statements = []
+
+        while (not self.isAtEnd()):
+            statements.append(self.statement())
         
-        return self.expression()
+        return statements
 
         # try:
         #     return self.expression()
@@ -23,6 +29,27 @@ class Parser:
     def expression(self):
 
         return self.equality()
+    
+    def statement(self):
+
+        if (self.match(TokenType('print'))):
+
+            return self.printStatement()
+
+        return self.expressionStatement()
+    
+
+    def printStatement(self):
+
+        value = self.expression()
+        self.consume(TokenType(';'), "Expect ; after value.")
+        return Print(value)
+
+    def expressionStatement(self):
+
+        expr = self.expression()
+        self.consume(TokenType(';'), "Expect ; after value.")
+        return Expression(expr)
 
     def equality(self):
 
