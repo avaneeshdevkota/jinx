@@ -1,7 +1,6 @@
 import sys
 from Scanner import Scanner
 from Parser import Parser
-from AstPrinter import AstPrinter
 from Interpreter import Interpreter
 from Error import JinxException, JinxSyntaxError, JinxParseError, JinxRuntimeError
 
