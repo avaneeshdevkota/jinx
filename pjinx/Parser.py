@@ -16,7 +16,13 @@ class Parser:
         statements = []
 
         while (not self.isAtEnd()):
-            statements.append(self.statement())
+
+            statement = self.declaration()
+            
+            if (statement == None):
+                raise JinxParseError(self.tokens[self.current], "Missing semi-colon.")
+
+            statements.append(statement)
         
         return statements
 
@@ -28,13 +34,31 @@ class Parser:
 
     def expression(self):
 
-        return self.equality()
+        return self.assignment()
+    
+    def declaration(self):
+
+        try:
+
+            if (self.match(TokenType('var'))):
+                return self.varDeclaration()
+            
+            return self.statement()
+        
+        except JinxParseError:
+
+            self.synchronize()
+            return None
     
     def statement(self):
 
         if (self.match(TokenType('print'))):
 
             return self.printStatement()
+        
+        if (self.match(TokenType('{'))):
+
+            return Block(self.block())
 
         return self.expressionStatement()
     
@@ -44,12 +68,52 @@ class Parser:
         value = self.expression()
         self.consume(TokenType(';'), "Expect ; after value.")
         return Print(value)
+    
+    def varDeclaration(self):
+
+        name = self.consume(TokenType('identifier'), "Expect variable name.")
+
+        initializer = None
+
+        if (self.match(TokenType('='))):
+            initializer = self.expression()
+        
+        self.consume(TokenType(';'), "Expect ';' after variable declaration.")
+        return Var(name, initializer)
 
     def expressionStatement(self):
 
         expr = self.expression()
         self.consume(TokenType(';'), "Expect ; after value.")
         return Expression(expr)
+
+    def block(self):
+
+        statements = []
+
+        while (not self.check(TokenType('}')) and not self.isAtEnd()):
+            statements.append(self.declaration())
+        
+        self.consume(TokenType('}'), "Expect '}' after block.")
+        return statements
+
+    
+    def assignment(self):
+
+        expr = self.equality()
+
+        if (self.match(TokenType('='))):
+
+            equals = self.previous()
+            value = self.assignment()
+        
+            if (isinstance(expr, Variable)):
+
+                return Assign(expr.name, value)
+
+            self.error(equals, "Invalid assignment target.")
+
+        return expr
 
     def equality(self):
 
@@ -124,6 +188,9 @@ class Parser:
         
         if (self.match(TokenType('number'), TokenType('string'))):
             return Literal(self.previous().literal)
+
+        if (self.match(TokenType('identifier'))):
+            return Variable(self.previous())
 
         if (self.match(TokenType('('))):
 
