@@ -5,6 +5,10 @@ import Token
 class ExprVisitor(ABC):
 
 	@abstractmethod
+	def visit_Assign_Expr(self, Expr: "Assign") -> typing.Any:
+		pass
+
+	@abstractmethod
 	def visit_Binary_Expr(self, Expr: "Binary") -> typing.Any:
 		pass
 
@@ -20,6 +24,10 @@ class ExprVisitor(ABC):
 	def visit_Unary_Expr(self, Expr: "Unary") -> typing.Any:
 		pass
 
+	@abstractmethod
+	def visit_Variable_Expr(self, Expr: "Variable") -> typing.Any:
+		pass
+
 
 class Expr:
 
@@ -29,6 +37,18 @@ class Expr:
 	@abstractmethod
 	def accept(self, visitor: ExprVisitor) -> typing.Any:
 		pass
+
+
+class Assign(Expr):
+
+	def __init__(self, name: Token, value: Expr):
+		super().__init__()
+
+		self.name = name
+		self.value = value
+
+	def accept(self, visitor : ExprVisitor) -> typing.Any:
+		return visitor.visit_Assign_Expr(self)
 
 
 class Binary(Expr):
@@ -76,5 +96,16 @@ class Unary(Expr):
 
 	def accept(self, visitor : ExprVisitor) -> typing.Any:
 		return visitor.visit_Unary_Expr(self)
+
+
+class Variable(Expr):
+
+	def __init__(self, name : Token):
+		super().__init__()
+
+		self.name  = name 
+
+	def accept(self, visitor : ExprVisitor) -> typing.Any:
+		return visitor.visit_Variable_Expr(self)
 
 
