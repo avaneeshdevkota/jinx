@@ -3,17 +3,21 @@ from Expr import *
 from Stmt import *
 from TokenType import TokenType
 from Error import JinxRuntimeError
+from Environment import Environment
 
 class Interpreter(ExprVisitor, StmtVisitor):
 
     def __init__(self):
 
-        pass
+        self.environment = Environment(None)
 
     def interpret(self, statements):
 
         for statement in statements:
 
+            if (statement == None):
+                continue
+            
             self.execute(statement)
         # try:
 
@@ -162,6 +166,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
     
         return None
     
+    def visit_Variable_Expr(self, expr: Variable):
+
+        return self.environment.get(expr.name)
+    
     def visit_Expression_Stmt(self, stmt: Expression):
 
         self.evaluate(stmt.expr)
@@ -171,6 +179,27 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
         value = self.evaluate(stmt.expr)
         print(self.toString(value))
+        return None
+    
+    def visit_Var_Stmt(self, stmt: Var):
+
+        value = None
+
+        if (stmt.initializer != None):
+            value = self.evaluate(stmt.initializer)
+        
+        self.environment.define(stmt.name.lexeme, value)
+        return None
+    
+    def visit_Assign_Expr(self, expr: Assign):
+
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
+    
+    def visit_Block_Stmt(self, stmt: Block):
+
+        self.executeBlock(stmt.statements, Environment(self.environment))
         return None
     
     def isTrue(self, expr):
@@ -200,6 +229,19 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def execute(self, stmt):
 
         return stmt.accept(self)
+    
+    def executeBlock(self, statements, environment):
+
+        previousEnvironment = self.environment
+
+        try:
+            self.environment = environment
+
+            for statement in statements:
+                self.execute(statement)
+
+        finally:
+            self.environment = previousEnvironment
     
     def error(self, token, message):
 
