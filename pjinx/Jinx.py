@@ -24,7 +24,7 @@ class Jinx:
             sys.exit(64)
         
         elif (self.n == 1):
-            self.runFile(sys.argv[0])
+            self.runFile(self.args[0])
         
         else:
             self.runPrompt()
@@ -38,7 +38,7 @@ class Jinx:
         
         self.run(source)
 
-        if (self.getErrorState()):
+        if (self.hadError):
             sys.exit(65)
 
     def runPrompt(self):
@@ -63,9 +63,12 @@ class Jinx:
             tokens = scanner.scanTokens()
 
             parser = Parser(tokens)
-            expression = parser.parse()
+            statements = parser.parse()
 
-            self.interpreter.interpret(expression)
+            if (self.hadError):
+                return
+
+            self.interpreter.interpret(statements)
         
         except (JinxSyntaxError, JinxParseError) as e:
             self.reportError(e)
