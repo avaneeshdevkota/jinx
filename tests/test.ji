@@ -1,3 +1,38 @@
 print "one";
 print true;
 print 1 + 2;
+
+var a = 1;
+var b = 2;
+print a + b;
+
+a = -2;
+print a + b;
+
+print ((a + b - 7)/2) * -4;
+
+var a = "global a";
+var b = "global b";
+var c = "global c";
+
+{
+    var a = "outer a";
+    var b = "outer b";
+
+    {
+
+        var a = "inner a";
+        print a;
+        print b;
+        print c;
+
+    }
+
+    print a;
+    print b;
+    print c;
+}
+
+print a;
+print b;
+print c;
