@@ -14,11 +14,19 @@ class StmtVisitor(ABC):
 		pass
 
 	@abstractmethod
+	def visit_If_Stmt(self, Stmt: "If") -> typing.Any:
+		pass
+
+	@abstractmethod
 	def visit_Print_Stmt(self, Stmt: "Print") -> typing.Any:
 		pass
 
 	@abstractmethod
 	def visit_Var_Stmt(self, Stmt: "Var") -> typing.Any:
+		pass
+
+	@abstractmethod
+	def visit_While_Stmt(self, Stmt: "While") -> typing.Any:
 		pass
 
 
@@ -54,6 +62,19 @@ class Expression(Stmt):
 		return visitor.visit_Expression_Stmt(self)
 
 
+class If(Stmt):
+
+	def __init__(self, condition: Expr, thenBranch: Stmt, elseBranch: typing.Optional[Stmt]):
+		super().__init__()
+
+		self.condition = condition
+		self.thenBranch = thenBranch
+		self.elseBranch = elseBranch
+
+	def accept(self, visitor : StmtVisitor) -> typing.Any:
+		return visitor.visit_If_Stmt(self)
+
+
 class Print(Stmt):
 
 	def __init__(self, expr: Expr):
@@ -75,5 +96,17 @@ class Var(Stmt):
 
 	def accept(self, visitor : StmtVisitor) -> typing.Any:
 		return visitor.visit_Var_Stmt(self)
+
+
+class While(Stmt):
+
+	def __init__(self, condition: Expr, body: Stmt):
+		super().__init__()
+
+		self.condition = condition
+		self.body = body
+
+	def accept(self, visitor : StmtVisitor) -> typing.Any:
+		return visitor.visit_While_Stmt(self)
 
 

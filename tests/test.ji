@@ -36,3 +36,19 @@ var c = "global c";
 print a;
 print b;
 print c;
+
+print "hi" or 2;
+print nil or "yes";
+
+a = 2;
+
+if (a == 2) {
+    print "that's right";
+}
+
+var count = 1;
+
+while (count <= 5) {
+    print count;
+    count = count + 1;
+}

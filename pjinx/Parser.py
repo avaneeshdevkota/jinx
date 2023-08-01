@@ -59,9 +59,30 @@ class Parser:
         if (self.match(TokenType('{'))):
 
             return Block(self.block())
+        
+        if (self.match(TokenType('if'))):
+
+            return self.ifStatement()
+        
+        if (self.match(TokenType('while'))):
+
+            return self.whileStatement()
 
         return self.expressionStatement()
     
+    def ifStatement(self):
+
+        self.consume(TokenType('('), "Expect '(' after if.")
+        condition = self.expression()
+        self.consume(TokenType(')'), "Expect ')' after '('.")
+
+        thenBranch = self.statement()
+        elseBranch = None
+
+        if (self.match(TokenType('else'))):
+            elseBranch = self.statement()
+        
+        return If(condition, thenBranch, elseBranch)
 
     def printStatement(self):
 
@@ -80,6 +101,15 @@ class Parser:
         
         self.consume(TokenType(';'), "Expect ';' after variable declaration.")
         return Var(name, initializer)
+    
+    def whileStatement(self):
+        
+        self.consume(TokenType('('), "Expect '(' after 'while'.")
+        condition = self.expression()
+        self.consume(TokenType(')'), "Expect, ')' after '('.")
+        body = self.statement()
+
+        return While(condition, body)
 
     def expressionStatement(self):
 
@@ -100,7 +130,7 @@ class Parser:
     
     def assignment(self):
 
-        expr = self.equality()
+        expr = self.orr()
 
         if (self.match(TokenType('='))):
 
@@ -113,6 +143,30 @@ class Parser:
 
             self.error(equals, "Invalid assignment target.")
 
+        return expr
+    
+    def orr(self):
+
+        expr = self.andd()
+
+        while (self.match(TokenType('or'))):
+
+            operator = self.previous()
+            right = self.andd()
+            expr = Logical(expr, operator, right)
+        
+        return expr
+    
+    def andd(self):
+
+        expr = self.equality()
+
+        while (self.match(TokenType('and'))):
+
+            operator = self.previous()
+            right = self.equality()
+            expr = Logical(expr, operator, right)
+        
         return expr
 
     def equality(self):

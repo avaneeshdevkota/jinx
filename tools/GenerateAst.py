@@ -73,6 +73,7 @@ expressions = {
 	"Binary": ('left: Expr', 'operator: Token', 'right: Expr'), 
 	"Grouping": ('expr: Expr', ),
 	"Literal": ('value: typing.Any', ),
+    "Logical": ('left: Expr', 'operator: Token', 'right: Expr'),
 	"Unary": ('operator: Token', 'right: Expr'),
     "Variable": ('name : Token', )
 }
@@ -81,8 +82,10 @@ statements = {
 
     "Block": ('statements: list', ), 
 	"Expression": ('expr: Expr', ), 
+    "If": ('condition: Expr', 'thenBranch: Stmt', 'elseBranch: typing.Optional[Stmt]'),
 	"Print": ('expr: Expr', ),
-    "Var": ('name: Token', 'initializer: Expr')
+    "Var": ('name: Token', 'initializer: Expr'),
+    "While": ('condition: Expr', 'body: Stmt')
 }
 
 defineAst(outputDir, "Expr", expressions)

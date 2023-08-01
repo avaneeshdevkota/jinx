@@ -148,6 +148,22 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visit_Literal_Expr(self, expr: Literal):
 
         return expr.value
+    
+    def visit_Logical_Expr(self, expr : Logical):
+
+        left = self.evaluate(expr.left)
+        
+        if (expr.operator.type == TokenType('or')):
+
+            if (self.isTrue(left)):
+                return left
+
+        else:
+            if (not self.isTrue(left)):
+                return left
+        
+        return self.evaluate(expr.right)
+            
 
     def visit_Unary_Expr(self, expr: Unary):
 
@@ -175,6 +191,16 @@ class Interpreter(ExprVisitor, StmtVisitor):
         self.evaluate(stmt.expr)
         return None
     
+    def visit_If_Stmt(self, stmt : If):
+
+        if (self.isTrue(self.evaluate(stmt.condition))):
+            self.execute(stmt.thenBranch)
+
+        elif (stmt.elseBranch != None):
+            self.execute(stmt.elseBranch)
+        
+        return None
+    
     def visit_Print_Stmt(self, stmt: Print):
 
         value = self.evaluate(stmt.expr)
@@ -189,6 +215,13 @@ class Interpreter(ExprVisitor, StmtVisitor):
             value = self.evaluate(stmt.initializer)
         
         self.environment.define(stmt.name.lexeme, value)
+        return None
+    
+    def visit_While_Stmt(self, stmt : While):
+
+        while (self.isTrue(self.evaluate(stmt.condition))):
+            self.execute(stmt.body)
+        
         return None
     
     def visit_Assign_Expr(self, expr: Assign):
