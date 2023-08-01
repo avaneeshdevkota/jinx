@@ -14,6 +14,10 @@ class StmtVisitor(ABC):
 		pass
 
 	@abstractmethod
+	def visit_Function_Stmt(self, Stmt: "Function") -> typing.Any:
+		pass
+
+	@abstractmethod
 	def visit_If_Stmt(self, Stmt: "If") -> typing.Any:
 		pass
 
@@ -60,6 +64,19 @@ class Expression(Stmt):
 
 	def accept(self, visitor : StmtVisitor) -> typing.Any:
 		return visitor.visit_Expression_Stmt(self)
+
+
+class Function(Stmt):
+
+	def __init__(self, name: Token, params: list, body: list):
+		super().__init__()
+
+		self.name = name
+		self.params = params
+		self.body = body
+
+	def accept(self, visitor : StmtVisitor) -> typing.Any:
+		return visitor.visit_Function_Stmt(self)
 
 
 class If(Stmt):

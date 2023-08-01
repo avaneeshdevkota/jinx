@@ -1,6 +1,9 @@
 from typing import Optional, Callable
 from Expr import *
 from Stmt import *
+from JinxCallable import *
+from Builtin import *
+from JinxFunction import JinxFunction
 from TokenType import TokenType
 from Error import JinxRuntimeError
 from Environment import Environment
@@ -9,7 +12,14 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def __init__(self):
 
-        self.environment = Environment(None)
+        self.globals = Environment(None)
+        self.environment = self.globals
+        self.init_builtin()
+
+    def init_builtin(self):
+
+        for name, fnc in functions_dict.items():
+            self.globals.define(name, fnc)
 
     def interpret(self, statements):
 
@@ -140,6 +150,22 @@ class Interpreter(ExprVisitor, StmtVisitor):
         if (expr.operator.type == TokenType('==')):
 
             return self.isEqual(left, right)
+    
+    def visit_Call_Expr(self, expr : Call):
+
+        callee = self.evaluate(expr.callee)
+        arguments = []
+
+        for arg in expr.arguments:
+            arguments.append(self.evaluate(arg))
+
+        if (not isinstance(callee, JinxCallable)):
+            raise JinxRuntimeError(expr.paren, "Can only call functions and classes.")
+    
+        if (len(arguments) != callee.arity()):
+            raise JinxRuntimeError(expr.paren, f"Expected {callee.arity} arguments but got {len(arguments)}.")
+        
+        return callee.call(self, arguments)
             
     def visit_Grouping_Expr(self, expr: Grouping):
 
@@ -191,6 +217,13 @@ class Interpreter(ExprVisitor, StmtVisitor):
         self.evaluate(stmt.expr)
         return None
     
+    def visit_Function_Stmt(self, stmt: Function):
+
+        fnc = JinxFunction(stmt)
+        self.environment.define(stmt.name.lexeme, fnc)
+
+        return None
+
     def visit_If_Stmt(self, stmt : If):
 
         if (self.isTrue(self.evaluate(stmt.condition))):

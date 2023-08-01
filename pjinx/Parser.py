@@ -19,6 +19,7 @@ class Parser:
 
             try:
                 statement = self.declaration()
+                # print(statement)
                 statements.append(statement)
             
             except:
@@ -44,10 +45,13 @@ class Parser:
             if (self.match(TokenType('var'))):
                 return self.varDeclaration()
             
+            if (self.match(TokenType('fun'))):
+                return self.function("function")
+            
             return self.statement()
         
         except JinxParseError:
-            
+
             self.synchronize()
             return None
     
@@ -163,7 +167,36 @@ class Parser:
 
         expr = self.expression()
         self.consume(TokenType(';'), "Expect ; after value.")
+
         return Expression(expr)
+    
+    def function(self, kind):
+
+        name = self.consume(TokenType('identifier'), f"Expect {kind} name.")
+        self.consume(TokenType('('), f"Expect '(' after {kind} name.")
+        parameters = []
+
+        if (len(parameters) >= 255):
+            raise JinxParseError(self.peek(), "Can't have more than 255 parameters.")
+        
+        parameters.append(self.consume(TokenType('identifier'), "Expect parameter name."))
+
+        while (self.match(TokenType(','))):
+
+            if (len(parameters) >= 255):
+                raise JinxParseError(self.peek(), "Can't have more than 255 parameters.")
+        
+            parameters.append(self.consume(TokenType('identifier'), "Expect parameter name."))
+        
+        
+        self.consume(TokenType(')'), "Expect ')' after parameters.")
+
+        self.consume(TokenType('{'), "Expect '{' before " + kind + "body.")
+
+        body = self.block()
+
+        return Function(name, parameters, body)
+
 
     def block(self):
 
@@ -273,8 +306,41 @@ class Parser:
             right = self.unary()
 
             return Unary(operator, right)
+        
+        return self.call()
+    
+    def finishCall(self, callee):
 
-        return self.primary()
+        arguments = []
+
+        if (not self.check(TokenType(')'))):
+
+            arguments.append(self.expression())
+
+        while (self.match(TokenType(','))):
+
+            if (len(arguments) >= 255):
+                raise JinxParseError(self.peek(), "Can't have more than 255 arguments.")
+                
+            arguments.append(self.expression())
+        
+        paren = self.consume(TokenType(')'), "Expect ')' after arguments.")
+        
+        return Call(callee, paren, arguments)
+
+    def call(self):
+
+        expr = self.primary()
+
+        while (True):
+
+            if (self.match(TokenType('('))):
+                expr = self.finishCall(expr)
+            
+            else:
+                break
+        
+        return expr            
 
     def primary(self):
 

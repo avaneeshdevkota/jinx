@@ -70,7 +70,8 @@ def defineType(file, baseName, className, fields):
 expressions = {
 
     "Assign": ('name: Token', 'value: Expr'),
-	"Binary": ('left: Expr', 'operator: Token', 'right: Expr'), 
+	"Binary": ('left: Expr', 'operator: Token', 'right: Expr'),
+    "Call": ('callee: Expr', 'paren: Token', 'arguments: list'),  
 	"Grouping": ('expr: Expr', ),
 	"Literal": ('value: typing.Any', ),
     "Logical": ('left: Expr', 'operator: Token', 'right: Expr'),
@@ -82,6 +83,7 @@ statements = {
 
     "Block": ('statements: list', ), 
 	"Expression": ('expr: Expr', ), 
+    "Function": ('name: Token', 'params: list', 'body: list'),
     "If": ('condition: Expr', 'thenBranch: Stmt', 'elseBranch: typing.Optional[Stmt]'),
 	"Print": ('expr: Expr', ),
     "Var": ('name: Token', 'initializer: Expr'),
