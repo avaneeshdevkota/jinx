@@ -16,7 +16,12 @@ def defineAst(outputDir, baseName, types):
 
         file.write('import typing\n')
         file.write('from abc import ABC, abstractmethod\n')
-        file.write('import Token\n\n')
+        file.write('import Token\n')
+
+        if (baseName == "Stmt"):
+            file.write('from Expr import *\n')
+        
+        file.write('\n')
 
         defineVisitor(file, baseName, types)
 
@@ -70,7 +75,14 @@ expressions = {
 	"Unary": ('operator: Token', 'right: Expr'),
 }
 
+statements = {
+
+	"Expression": ('expr: Expr', ), 
+	"Print": ('expr: Expr', ),
+}
+
 defineAst(outputDir, "Expr", expressions)
+defineAst(outputDir, "Stmt", statements)
 
 # "Binary : Expr left, Token operator, Expr right",
 # "Grouping : Expr expression",
