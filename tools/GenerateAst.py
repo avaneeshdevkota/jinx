@@ -69,16 +69,20 @@ def defineType(file, baseName, className, fields):
 
 expressions = {
 
+    "Assign": ('name: Token', 'value: Expr'),
 	"Binary": ('left: Expr', 'operator: Token', 'right: Expr'), 
 	"Grouping": ('expr: Expr', ),
 	"Literal": ('value: typing.Any', ),
 	"Unary": ('operator: Token', 'right: Expr'),
+    "Variable": ('name : Token', )
 }
 
 statements = {
 
+    "Block": ('statements: list', ), 
 	"Expression": ('expr: Expr', ), 
 	"Print": ('expr: Expr', ),
+    "Var": ('name: Token', 'initializer: Expr')
 }
 
 defineAst(outputDir, "Expr", expressions)
