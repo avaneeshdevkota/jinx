@@ -1,20 +1,24 @@
 from typing import Optional, Callable
 from Expr import *
+from Stmt import *
 from TokenType import TokenType
 from Error import JinxRuntimeError
 
-class Interpreter(ExprVisitor):
+class Interpreter(ExprVisitor, StmtVisitor):
 
     def __init__(self):
 
         pass
 
-    def interpret(self, expression):
+    def interpret(self, statements):
 
+        for statement in statements:
+
+            self.execute(statement)
         # try:
 
-        value = self.evaluate(expression)
-        print(self.toString(value))
+        # value = self.evaluate(expression)
+        # print(self.toString(value))
 
         # except JinxRuntimeError:
         #     return None
@@ -44,6 +48,7 @@ class Interpreter(ExprVisitor):
         if (expr.operator.type == TokenType('+')):
 
             if (isinstance(left, float) and isinstance(right, float)):
+
                 return float(left) + float(right)
             
             if (isinstance(left, str) and isinstance(right, str)):
@@ -157,6 +162,17 @@ class Interpreter(ExprVisitor):
     
         return None
     
+    def visit_Expression_Stmt(self, stmt: Expression):
+
+        self.evaluate(stmt.expr)
+        return None
+    
+    def visit_Print_Stmt(self, stmt: Print):
+
+        value = self.evaluate(stmt.expr)
+        print(self.toString(value))
+        return None
+    
     def isTrue(self, expr):
 
         if (expr == None):
@@ -180,6 +196,10 @@ class Interpreter(ExprVisitor):
     def evaluate(self, expr):
 
         return expr.accept(self)
+    
+    def execute(self, stmt):
+
+        return stmt.accept(self)
     
     def error(self, token, message):
 
