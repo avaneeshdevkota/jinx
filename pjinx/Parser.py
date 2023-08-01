@@ -17,13 +17,15 @@ class Parser:
 
         while (not self.isAtEnd()):
 
-            try:
-                statement = self.declaration()
-                # print(statement)
-                statements.append(statement)
+            statement = self.declaration()
+            statements.append(statement)
+
+            # try:
+            #     statement = self.declaration()
+            #     statements.append(statement)
             
-            except:
-                raise JinxParseError(self.tokens[self.current], "Something has gone very wrong.")
+            # except:
+            #     raise JinxParseError(self.tokens[self.current], "Something has gone very wrong.")
 
         
         return statements
@@ -76,6 +78,10 @@ class Parser:
         if (self.match(TokenType('for'))):
 
             return self.forStatement()
+        
+        if (self.match(TokenType('return'))):
+
+            return self.returnStatement()
 
         return self.expressionStatement()
     
@@ -98,6 +104,17 @@ class Parser:
         value = self.expression()
         self.consume(TokenType(';'), "Expect ; after value.")
         return Print(value)
+    
+    def returnStatement(self):
+
+        keyword = self.previous()
+        value = None
+        
+        if (not self.check(TokenType(';'))):
+            value = self.expression()
+        
+        self.consume(TokenType(';'), "Expect ';' after return value.")
+        return Return(keyword, value)
     
     def varDeclaration(self):
 
@@ -325,7 +342,7 @@ class Parser:
             arguments.append(self.expression())
         
         paren = self.consume(TokenType(')'), "Expect ')' after arguments.")
-        
+
         return Call(callee, paren, arguments)
 
     def call(self):

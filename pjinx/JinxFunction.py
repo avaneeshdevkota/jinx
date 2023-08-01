@@ -1,5 +1,6 @@
 from JinxCallable import *
 from Environment import Environment
+from Return import Return
 
 class JinxFunction(JinxCallable):
 
@@ -13,14 +14,15 @@ class JinxFunction(JinxCallable):
 
         for i in range(len(self.declaration.params)):
             environment.define(self.declaration.params[i].lexeme, arguments[i])
+
+        try:
+            interpreter.executeBlock(self.declaration.body, environment)
         
-        interpreter.executeBlock(self.declaration.body, environment)
+        except Return as return_value:
+            return return_value.value
+        
         return None
     
     def arity(self):
 
         return len(self.declaration.params)
-    
-    # def __str__(self):
-
-    #     return f"<fn {self.declaration.name}>"

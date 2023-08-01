@@ -7,6 +7,7 @@ from JinxFunction import JinxFunction
 from TokenType import TokenType
 from Error import JinxRuntimeError
 from Environment import Environment
+from Return import Return
 
 class Interpreter(ExprVisitor, StmtVisitor):
 
@@ -161,9 +162,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
         if (not isinstance(callee, JinxCallable)):
             raise JinxRuntimeError(expr.paren, "Can only call functions and classes.")
+        
     
         if (len(arguments) != callee.arity()):
-            raise JinxRuntimeError(expr.paren, f"Expected {callee.arity} arguments but got {len(arguments)}.")
+            raise JinxRuntimeError(expr.paren, f"Expected {callee.arity()} arguments but got {len(arguments)}.")
         
         return callee.call(self, arguments)
             
@@ -239,6 +241,15 @@ class Interpreter(ExprVisitor, StmtVisitor):
         value = self.evaluate(stmt.expr)
         print(self.toString(value))
         return None
+    
+    def visit_Return_Stmt(self, stmt: Return):
+
+        value = None
+
+        if (stmt.value != None):
+            value = self.evaluate(stmt.value)
+        
+        raise Return(value)
     
     def visit_Var_Stmt(self, stmt: Var):
 

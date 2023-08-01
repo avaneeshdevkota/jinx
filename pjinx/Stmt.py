@@ -26,6 +26,10 @@ class StmtVisitor(ABC):
 		pass
 
 	@abstractmethod
+	def visit_Return_Stmt(self, Stmt: "Return") -> typing.Any:
+		pass
+
+	@abstractmethod
 	def visit_Var_Stmt(self, Stmt: "Var") -> typing.Any:
 		pass
 
@@ -101,6 +105,18 @@ class Print(Stmt):
 
 	def accept(self, visitor : StmtVisitor) -> typing.Any:
 		return visitor.visit_Print_Stmt(self)
+
+
+class Return(Stmt):
+
+	def __init__(self, keyword: Token, value : Expr):
+		super().__init__()
+
+		self.keyword = keyword
+		self.value  = value 
+
+	def accept(self, visitor : StmtVisitor) -> typing.Any:
+		return visitor.visit_Return_Stmt(self)
 
 
 class Var(Stmt):

@@ -86,6 +86,7 @@ statements = {
     "Function": ('name: Token', 'params: list', 'body: list'),
     "If": ('condition: Expr', 'thenBranch: Stmt', 'elseBranch: typing.Optional[Stmt]'),
 	"Print": ('expr: Expr', ),
+    "Return": ('keyword: Token', 'value : Expr'),
     "Var": ('name: Token', 'initializer: Expr'),
     "While": ('condition: Expr', 'body: Stmt')
 }
