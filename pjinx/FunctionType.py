@@ -11,3 +11,4 @@ class ClassType(Enum):
     
     NONE = 'none'
     CLASS = 'class'
+    SUBCLASS = 'subclass'

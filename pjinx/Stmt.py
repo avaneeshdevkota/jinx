@@ -65,10 +65,11 @@ class Block(Stmt):
 
 class Class(Stmt):
 
-	def __init__(self, name: Token, methods: list):
+	def __init__(self, name: Token, superclass: Variable, methods: list):
 		super().__init__()
 
 		self.name = name
+		self.superclass = superclass
 		self.methods = methods
 
 	def accept(self, visitor : StmtVisitor) -> typing.Any:

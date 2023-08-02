@@ -30,6 +30,20 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.declare(stmt.name)
         self.define(stmt.name)
 
+        if (stmt.superclass != None and stmt.name.lexeme == stmt.superclass.name.lexeme):
+            raise JinxException(stmt.superclass.name.line, "A class cannot inherit from itself.")
+
+        if (stmt.superclass != None):
+
+            self.currentClass = ClassType('subclass')
+            self.resolve(stmt.superclass)
+
+        if (stmt.superclass != None):
+
+            self.beginScope()
+            self.scopes[-1]["super"] = True
+
+
         self.beginScope()
         self.scopes[-1]["this"] = True
 
@@ -43,6 +57,9 @@ class Resolver(ExprVisitor, StmtVisitor):
             self.resolveFunction(method, declaration)
 
         self.endScope()
+
+        if (stmt.superclass != None):
+            self.endScope()
 
         self.currentClass = enclosingClass
         return None
@@ -81,7 +98,7 @@ class Resolver(ExprVisitor, StmtVisitor):
             raise JinxException(stmt.keyword.line, "Can't return from top-level code.")
 
         if (stmt.value != None):
-            
+
             if (self.currentFunction == FunctionType('initializer')):
                 raise JinxException(stmt.keyword.line, "Can't return a value from an initializer.")
             
@@ -152,6 +169,17 @@ class Resolver(ExprVisitor, StmtVisitor):
 
         self.resolve(expr.value)
         self.resolve(expr.obj)
+        return None
+    
+    def visit_Super_Expr(self, expr: Super):
+
+        if (self.currentClass == ClassType('none')):
+            raise JinxException(expr.keyword.line, "Can't use 'super' outside of a class.")
+        
+        elif (self.currentClass != ClassType('subclass')):
+            raise JinxException(expr.keyword.line, "Can't use 'super' in a class with no superclass.")
+
+        self.resolveLocal(expr, expr.keyword)
         return None
     
     def visit_This_Expr(self, expr: This):

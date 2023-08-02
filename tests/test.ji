@@ -69,15 +69,6 @@ fun greet(first, last) {
 
 greet("Avaneesh", "Devkota");
 
-fun fib(n) {
-    if (n <= 1) return n;
-    return fib(n - 2) + fib(n - 1);
-}
-
-for (var i = 0; i < 15; i = i + 1) {
-    print fib(i);
-}
-
 fun makeCounter() {
 
     var i = 0;
@@ -102,3 +93,42 @@ class Bacon {
 }
 
 Bacon().eat();
+
+class Doughnut {
+    cook() {
+        print "Fry until golden brown.";
+    }
+}
+
+class BostonCream < Doughnut {
+
+    cook() {
+        super.cook();
+        print "Pipe full of custard and coat with chocolate.";
+    }
+}
+
+BostonCream().cook();
+
+fun fib(n) {
+
+    if (n < 2) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
+var before = clock();
+print fib(2);
+var after = clock();
+print after - before;
+
+print("Enter your name: ");
+var userin = input();
+
+
+if (userin == "bingbong") {
+    print("You have a great name.");
+}
+
+var letterCount = len(userin);
+print(letterCount);
+

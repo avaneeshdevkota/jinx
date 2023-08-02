@@ -77,6 +77,7 @@ expressions = {
 	"Literal": ('value: typing.Any', ),
     "Logical": ('left: Expr', 'operator: Token', 'right: Expr'),
     "Set": ('obj: Expr', 'name: Token', 'value: Expr'),
+    "Super": ('keyword: Token', 'method: Token'),
     "This": ('keyword: Token', ),
 	"Unary": ('operator: Token', 'right: Expr'),
     "Variable": ('name: Token', )
@@ -85,7 +86,7 @@ expressions = {
 statements = {
 
     "Block": ('statements: list', ), 
-    "Class": ('name: Token', 'methods: list'), 
+    "Class": ('name: Token', 'superclass: Variable', 'methods: list'), 
 	"Expression": ('expr: Expr', ), 
     "Function": ('name: Token', 'params: list', 'body: list'),
     "If": ('condition: Expr', 'thenBranch: Stmt', 'elseBranch: typing.Optional[Stmt]'),

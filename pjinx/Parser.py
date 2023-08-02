@@ -63,6 +63,14 @@ class Parser:
     def classDeclaration(self):
 
         name = self.consume(TokenType('identifier'), "Expect class name.")
+
+        superclass = None
+
+        if (self.match(TokenType('<'))):
+
+            self.consume(TokenType('identifier'), "Expect superclass name")
+            superclass = Variable(self.previous())
+
         self.consume(TokenType('{'), "Expect '{' before class body.")
 
         methods = []
@@ -71,8 +79,7 @@ class Parser:
             methods.append(self.function("method"))
         
         self.consume(TokenType('}'), "Expect '}' after class body.")
-
-        return Class(name, methods)
+        return Class(name, superclass, methods)
     
     def statement(self):
 
@@ -409,6 +416,14 @@ class Parser:
         
         if (self.match(TokenType('this'))):
             return This(self.previous())
+        
+        if (self.match(TokenType('super'))):
+
+            keyword = self.previous()
+            self.consume(TokenType('.'), "Expect '.' after 'super'.")
+            method = self.consume(TokenType('identifier'), "Expect superclass method name.")
+
+            return Super(keyword, method)
     
         raise JinxParseError(self.peek(), "Expect expression.")
     

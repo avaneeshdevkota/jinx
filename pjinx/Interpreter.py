@@ -33,13 +33,6 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 continue
             
             self.execute(statement)
-        # try:
-
-        # value = self.evaluate(expression)
-        # print(self.toString(value))
-
-        # except JinxRuntimeError:
-        #     return None
     
     def toString(self, val):
 
@@ -215,6 +208,20 @@ class Interpreter(ExprVisitor, StmtVisitor):
         obj.set(expr.name, value)
         
         return value
+    
+    def visit_Super_Expr(self, expr: Super):
+
+        dist = self.locals.get(expr, None)
+        superclass = self.environment.getAt(dist, "super")
+
+        obj = self.environment.getAt(dist - 1, "this")
+
+        method = superclass.findMethod(expr.method.lexeme)
+
+        if (method == None):
+            raise JinxRuntimeError(f"Undefined property {expr.name.lexeme}.")
+        
+        return method.bind(obj)
 
     def visit_This_Expr(self, expr: This):
 
@@ -325,7 +332,22 @@ class Interpreter(ExprVisitor, StmtVisitor):
     
     def visit_Class_Stmt(self, stmt: Class):
 
+        superclass = None
+        
+        if (stmt.superclass != None):
+
+            superclass = self.evaluate(stmt.superclass)
+
+            if (not isinstance(superclass, JinxClass)):
+                raise JinxRuntimeError(stmt.superclass.name, "Superclass must be a class.")
+
         self.environment.define(stmt.name.lexeme, None)
+
+        if (stmt.superclass != None):
+
+            self.environment = Environment(self.environment)
+            self.environment.define("super", superclass)
+
         methods = {}
 
         for method in stmt.methods:
@@ -333,7 +355,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
             function = JinxFunction(method, self.environment, (method.name.lexeme == "init"))
             methods[method.name.lexeme] = function
         
-        jclass = JinxClass(stmt.name.lexeme, methods)
+        jclass = JinxClass(stmt.name.lexeme, superclass, methods)
+
+        if (superclass != None):
+            self.environment = self.environment.enclosing
+
         self.environment.assign(stmt.name, jclass)
 
     def isTrue(self, expr):

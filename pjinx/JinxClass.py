@@ -3,15 +3,19 @@ from JinxInstance import JinxInstance
 
 class JinxClass(JinxCallable):
 
-    def __init__(self, name, methods):
+    def __init__(self, name, superclass, methods):
 
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
     def findMethod(self, name):
 
         if (name in self.methods.keys()):
             return self.methods[name]
+        
+        if (self.superclass != None):
+            return self.superclass.findMethod(name)
         
         return None
 
