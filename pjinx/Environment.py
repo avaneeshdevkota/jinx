@@ -12,6 +12,23 @@ class Environment:
 
         self.var_map[name] = value
 
+    def ancestor(self, dist):
+
+        env = self
+
+        for i in range(dist):
+            env = env.enclosing
+        
+        return env
+    
+    def getAt(self, dist, name):
+
+        return self.ancestor(dist).var_map.get(name)
+    
+    def assignAt(self, dist, name, value):
+
+        self.ancestor(dist).var_map[name.lexeme] = value
+
     def get(self, name : Token):
 
         if (name.lexeme in self.var_map.keys()):

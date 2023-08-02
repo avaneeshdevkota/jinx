@@ -15,6 +15,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
         self.globals = Environment(None)
         self.environment = self.globals
+        self.locals = {}
         self.init_builtin()
 
     def init_builtin(self):
@@ -212,7 +213,17 @@ class Interpreter(ExprVisitor, StmtVisitor):
     
     def visit_Variable_Expr(self, expr: Variable):
 
-        return self.environment.get(expr.name)
+        return self.lookUp(expr.name, expr)
+    
+    def lookUp(self, name: Token, expr: Expr):
+
+        dist = self.locals.get(expr, None)
+
+        if (dist != None):
+            return self.environment.getAt(dist, name.lexeme)
+        
+        else:
+            return self.globals.get(name)
     
     def visit_Expression_Stmt(self, stmt: Expression):
 
@@ -271,7 +282,14 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visit_Assign_Expr(self, expr: Assign):
 
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+        dist = self.locals.get(expr, None)
+
+        if (dist != None):
+            self.environment.assignAt(dist, expr.name, value)
+        
+        else:
+            self.globals.assign(expr.name, value)
+            
         return value
     
     def visit_Block_Stmt(self, stmt: Block):
@@ -307,6 +325,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
         return stmt.accept(self)
     
+    def resolve(self, expr: Expr, depth: int):
+
+        self.locals[expr] = depth
+    
     def executeBlock(self, statements, environment):
 
         previousEnvironment = self.environment
@@ -319,10 +341,4 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
         finally:
             self.environment = previousEnvironment
-    
-    def error(self, token, message):
-
-        err = JinxRuntimeError(token, message)
-        return err
-    
 

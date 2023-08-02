@@ -2,6 +2,7 @@ import sys
 from Scanner import Scanner
 from Parser import Parser
 from Interpreter import Interpreter
+from Resolver import Resolver
 from Error import JinxException, JinxSyntaxError, JinxParseError, JinxRuntimeError
 
 class Jinx:
@@ -66,6 +67,12 @@ class Jinx:
 
             if (self.hadError):
                 return
+            
+            resolver = Resolver(self.interpreter)
+            resolver.resolve(statements)
+
+            if (self.hadError):
+                return
 
             self.interpreter.interpret(statements)
         
@@ -74,6 +81,9 @@ class Jinx:
         
         except JinxRuntimeError as e:
             self.reportRuntimeError(e)
+
+        except JinxException as e:
+            self.reportError(e)
         
     def reportError(self, err: JinxException) -> None:
 
