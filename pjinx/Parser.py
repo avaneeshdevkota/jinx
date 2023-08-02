@@ -189,14 +189,14 @@ class Parser:
     
     def function(self, kind):
 
+
         name = self.consume(TokenType('identifier'), f"Expect {kind} name.")
         self.consume(TokenType('('), f"Expect '(' after {kind} name.")
         parameters = []
 
-        if (len(parameters) >= 255):
-            raise JinxParseError(self.peek(), "Can't have more than 255 parameters.")
+        if (not self.check(TokenType(')'))):
+            parameters.append(self.consume(TokenType('identifier'), "Expect parameter name."))
         
-        parameters.append(self.consume(TokenType('identifier'), "Expect parameter name."))
 
         while (self.match(TokenType(','))):
 
