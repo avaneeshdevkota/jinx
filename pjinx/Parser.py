@@ -50,12 +50,29 @@ class Parser:
             if (self.match(TokenType('fun'))):
                 return self.function("function")
             
+            if (self.match(TokenType('class'))):
+                return self.classDeclaration()
+            
             return self.statement()
         
         except JinxParseError:
 
             self.synchronize()
             return None
+        
+    def classDeclaration(self):
+
+        name = self.consume(TokenType('identifier'), "Expect class name.")
+        self.consume(TokenType('{'), "Expect '{' before class body.")
+
+        methods = []
+
+        while (not self.check(TokenType('}')) and not self.isAtEnd()):
+            methods.append(self.function("method"))
+        
+        self.consume(TokenType('}'), "Expect '}' after class body.")
+
+        return Class(name, methods)
     
     def statement(self):
 
@@ -235,8 +252,10 @@ class Parser:
             value = self.assignment()
         
             if (isinstance(expr, Variable)):
-
                 return Assign(expr.name, value)
+            
+            elif (isinstance(expr, Get)):
+                return Set(expr.obj, expr.name, value)
 
             self.error(equals, "Invalid assignment target.")
 
@@ -352,7 +371,13 @@ class Parser:
         while (True):
 
             if (self.match(TokenType('('))):
+
                 expr = self.finishCall(expr)
+
+            elif (self.match(TokenType('.'))):
+
+                name = self.consume(TokenType('identifier'), "Expect property name after '.'.")
+                expr = Get(expr, name)
             
             else:
                 break
@@ -381,6 +406,9 @@ class Parser:
             expr = self.expression()
             self.consume(TokenType(')'), "Expect ')' after '('")
             return Grouping(expr)
+        
+        if (self.match(TokenType('this'))):
+            return This(self.previous())
     
         raise JinxParseError(self.peek(), "Expect expression.")
     

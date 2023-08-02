@@ -10,6 +10,10 @@ class StmtVisitor(ABC):
 		pass
 
 	@abstractmethod
+	def visit_Class_Stmt(self, Stmt: "Class") -> typing.Any:
+		pass
+
+	@abstractmethod
 	def visit_Expression_Stmt(self, Stmt: "Expression") -> typing.Any:
 		pass
 
@@ -57,6 +61,18 @@ class Block(Stmt):
 
 	def accept(self, visitor : StmtVisitor) -> typing.Any:
 		return visitor.visit_Block_Stmt(self)
+
+
+class Class(Stmt):
+
+	def __init__(self, name: Token, methods: list):
+		super().__init__()
+
+		self.name = name
+		self.methods = methods
+
+	def accept(self, visitor : StmtVisitor) -> typing.Any:
+		return visitor.visit_Class_Stmt(self)
 
 
 class Expression(Stmt):

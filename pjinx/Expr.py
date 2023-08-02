@@ -17,6 +17,10 @@ class ExprVisitor(ABC):
 		pass
 
 	@abstractmethod
+	def visit_Get_Expr(self, Expr: "Get") -> typing.Any:
+		pass
+
+	@abstractmethod
 	def visit_Grouping_Expr(self, Expr: "Grouping") -> typing.Any:
 		pass
 
@@ -26,6 +30,14 @@ class ExprVisitor(ABC):
 
 	@abstractmethod
 	def visit_Logical_Expr(self, Expr: "Logical") -> typing.Any:
+		pass
+
+	@abstractmethod
+	def visit_Set_Expr(self, Expr: "Set") -> typing.Any:
+		pass
+
+	@abstractmethod
+	def visit_This_Expr(self, Expr: "This") -> typing.Any:
 		pass
 
 	@abstractmethod
@@ -85,6 +97,18 @@ class Call(Expr):
 		return visitor.visit_Call_Expr(self)
 
 
+class Get(Expr):
+
+	def __init__(self, obj: Expr, name: Token):
+		super().__init__()
+
+		self.obj = obj
+		self.name = name
+
+	def accept(self, visitor : ExprVisitor) -> typing.Any:
+		return visitor.visit_Get_Expr(self)
+
+
 class Grouping(Expr):
 
 	def __init__(self, expr: Expr):
@@ -120,6 +144,30 @@ class Logical(Expr):
 		return visitor.visit_Logical_Expr(self)
 
 
+class Set(Expr):
+
+	def __init__(self, obj: Expr, name: Token, value: Expr):
+		super().__init__()
+
+		self.obj = obj
+		self.name = name
+		self.value = value
+
+	def accept(self, visitor : ExprVisitor) -> typing.Any:
+		return visitor.visit_Set_Expr(self)
+
+
+class This(Expr):
+
+	def __init__(self, keyword: Token):
+		super().__init__()
+
+		self.keyword = keyword
+
+	def accept(self, visitor : ExprVisitor) -> typing.Any:
+		return visitor.visit_This_Expr(self)
+
+
 class Unary(Expr):
 
 	def __init__(self, operator: Token, right: Expr):
@@ -134,10 +182,10 @@ class Unary(Expr):
 
 class Variable(Expr):
 
-	def __init__(self, name : Token):
+	def __init__(self, name: Token):
 		super().__init__()
 
-		self.name  = name 
+		self.name = name
 
 	def accept(self, visitor : ExprVisitor) -> typing.Any:
 		return visitor.visit_Variable_Expr(self)

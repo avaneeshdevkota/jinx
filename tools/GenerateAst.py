@@ -71,17 +71,21 @@ expressions = {
 
     "Assign": ('name: Token', 'value: Expr'),
 	"Binary": ('left: Expr', 'operator: Token', 'right: Expr'),
-    "Call": ('callee: Expr', 'paren: Token', 'arguments: list'),  
+    "Call": ('callee: Expr', 'paren: Token', 'arguments: list'),
+    "Get": ('obj: Expr', 'name: Token'),
 	"Grouping": ('expr: Expr', ),
 	"Literal": ('value: typing.Any', ),
     "Logical": ('left: Expr', 'operator: Token', 'right: Expr'),
+    "Set": ('obj: Expr', 'name: Token', 'value: Expr'),
+    "This": ('keyword: Token', ),
 	"Unary": ('operator: Token', 'right: Expr'),
-    "Variable": ('name : Token', )
+    "Variable": ('name: Token', )
 }
 
 statements = {
 
     "Block": ('statements: list', ), 
+    "Class": ('name: Token', 'methods: list'), 
 	"Expression": ('expr: Expr', ), 
     "Function": ('name: Token', 'params: list', 'body: list'),
     "If": ('condition: Expr', 'thenBranch: Stmt', 'elseBranch: typing.Optional[Stmt]'),

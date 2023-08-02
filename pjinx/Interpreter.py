@@ -2,12 +2,14 @@ from typing import Optional, Callable
 from Expr import *
 from Stmt import *
 from JinxCallable import *
+from JinxClass import *
 from Builtin import *
 from JinxFunction import JinxFunction
 from TokenType import TokenType
 from Error import JinxRuntimeError
 from Environment import Environment
 from Return import Return
+
 
 class Interpreter(ExprVisitor, StmtVisitor):
 
@@ -169,6 +171,15 @@ class Interpreter(ExprVisitor, StmtVisitor):
             raise JinxRuntimeError(expr.paren, f"Expected {callee.arity()} arguments but got {len(arguments)}.")
         
         return callee.call(self, arguments)
+    
+    def visit_Get_Expr(self, expr: Get):
+        
+        obj = self.evaluate(expr.obj)
+
+        if (isinstance(obj, JinxInstance)):
+            return obj.get(expr.name)
+        
+        raise JinxRuntimeError(expr.name, "Only instances have properties.")
             
     def visit_Grouping_Expr(self, expr: Grouping):
 
@@ -192,7 +203,22 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 return left
         
         return self.evaluate(expr.right)
-            
+    
+    def visit_Set_Expr(self, expr: Set):
+
+        obj = self.evaluate(expr.obj)
+
+        if (not isinstance(obj, JinxInstance)):
+            raise JinxRuntimeError(expr.name, "Only instances have fields.")
+        
+        value = self.evaluate(expr.value)
+        obj.set(expr.name, value)
+        
+        return value
+
+    def visit_This_Expr(self, expr: This):
+
+        return self.lookUp(expr.keyword, expr)            
 
     def visit_Unary_Expr(self, expr: Unary):
 
@@ -232,7 +258,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
     
     def visit_Function_Stmt(self, stmt: Function):
 
-        fnc = JinxFunction(stmt, self.environment)
+        fnc = JinxFunction(stmt, self.environment, False)
         self.environment.define(stmt.name.lexeme, fnc)
 
         return None
@@ -289,7 +315,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
         
         else:
             self.globals.assign(expr.name, value)
-            
+
         return value
     
     def visit_Block_Stmt(self, stmt: Block):
@@ -297,6 +323,19 @@ class Interpreter(ExprVisitor, StmtVisitor):
         self.executeBlock(stmt.statements, Environment(self.environment))
         return None
     
+    def visit_Class_Stmt(self, stmt: Class):
+
+        self.environment.define(stmt.name.lexeme, None)
+        methods = {}
+
+        for method in stmt.methods:
+
+            function = JinxFunction(method, self.environment, (method.name.lexeme == "init"))
+            methods[method.name.lexeme] = function
+        
+        jclass = JinxClass(stmt.name.lexeme, methods)
+        self.environment.assign(stmt.name, jclass)
+
     def isTrue(self, expr):
 
         if (expr == None):

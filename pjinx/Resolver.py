@@ -3,7 +3,7 @@ from Token import Token
 from Expr import *
 from Stmt import *
 from Error import *
-from FunctionType import FunctionType
+from FunctionType import FunctionType, ClassType
 
 class Resolver(ExprVisitor, StmtVisitor):
 
@@ -12,6 +12,7 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.interpreter = interpreter
         self.scopes = []
         self.currentFunction = FunctionType('none')
+        self.currentClass = ClassType('none')
 
     def visit_Block_Stmt(self, stmt: Block):
 
@@ -19,6 +20,31 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve(stmt.statements)
         self.endScope()
         
+        return None
+    
+    def visit_Class_Stmt(self, stmt: Class):
+
+        enclosingClass = self.currentClass
+        self.currentClass = ClassType('class')
+
+        self.declare(stmt.name)
+        self.define(stmt.name)
+
+        self.beginScope()
+        self.scopes[-1]["this"] = True
+
+        for method in stmt.methods:
+
+            declaration = FunctionType('method')
+
+            if (method.name.lexeme == "init"):
+                declaration = FunctionType('method')
+
+            self.resolveFunction(method, declaration)
+
+        self.endScope()
+
+        self.currentClass = enclosingClass
         return None
     
     def visit_Expression_Stmt(self, stmt: Expression):
@@ -55,6 +81,10 @@ class Resolver(ExprVisitor, StmtVisitor):
             raise JinxException(stmt.keyword.line, "Can't return from top-level code.")
 
         if (stmt.value != None):
+            
+            if (self.currentFunction == FunctionType('initializer')):
+                raise JinxException(stmt.keyword.line, "Can't return a value from an initializer.")
+            
             self.resolve(stmt.value)
         
         return None
@@ -97,6 +127,11 @@ class Resolver(ExprVisitor, StmtVisitor):
         
         return None
     
+    def visit_Get_Expr(self, expr: Get):
+
+        self.resolve(expr.obj)
+        return None
+    
     def visit_Grouping_Expr(self, expr: Grouping):
 
         self.resolve(expr.expr)
@@ -111,6 +146,20 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve(expr.left)
         self.resolve(expr.right)
 
+        return None
+    
+    def visit_Set_Expr(self, expr: Set):
+
+        self.resolve(expr.value)
+        self.resolve(expr.obj)
+        return None
+    
+    def visit_This_Expr(self, expr: This):
+
+        if (self.currentClass == ClassType('none')):
+            raise JinxException(expr.keyword.line, "Can't use 'this' outside of a class.")
+
+        self.resolveLocal(expr, expr.keyword)
         return None
     
     def visit_Unary_Expr(self, expr: Unary):

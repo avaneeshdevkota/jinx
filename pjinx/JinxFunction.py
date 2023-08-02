@@ -4,10 +4,18 @@ from Return import Return
 
 class JinxFunction(JinxCallable):
 
-    def __init__(self, declaration, closure):
+    def __init__(self, declaration, closure, isInitializer):
 
         self.declaration = declaration
         self.closure = closure
+        self.isInitializer = isInitializer
+    
+    def bind(self, instance):
+
+        env = Environment(self.closure)
+        env.define("this", instance)
+
+        return JinxFunction(self.declaration, env, self.isInitializer)
     
     def call(self, interpreter, arguments):
 
@@ -20,8 +28,15 @@ class JinxFunction(JinxCallable):
             interpreter.executeBlock(self.declaration.body, environment)
         
         except Return as return_value:
+
+            if (self.isInitializer):
+                return self.closure.getAt(0, "this")
+            
             return return_value.value
         
+        if (self.isInitializer):
+            return self.closure.getAt(0, "this")
+
         return None
     
     def arity(self):
