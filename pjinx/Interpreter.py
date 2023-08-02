@@ -221,7 +221,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
     
     def visit_Function_Stmt(self, stmt: Function):
 
-        fnc = JinxFunction(stmt)
+        fnc = JinxFunction(stmt, self.environment)
         self.environment.define(stmt.name.lexeme, fnc)
 
         return None
